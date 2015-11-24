@@ -1,0 +1,50 @@
+import { rand, pi } from "./const";
+
+
+export function drawMap1(ctx) {
+  ctx.fillStyle = "pink";
+  ctx.fillRect(125, 0, 50, 425);
+  ctx.fillRect(375, 250, 50, 175);
+  ctx.fillRect(0, 0, 800, rand);
+  ctx.fillRect(0, 0, rand, 600);
+  ctx.fillRect(800 - rand, 0, rand, 600);
+  ctx.fillRect(0, 600 -  rand, 800, rand);
+  ctx.beginPath();
+  ctx.arc(275, 425, 150, 0, pi);
+  ctx.fillStyle = "pink";
+  ctx.fill();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.arc(275, 425, 100, 0, pi);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.arc(500, 250, 125, pi, 2 * pi);
+  ctx.fillStyle = "pink";
+  ctx.fill();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.arc(500, 250, 75, pi, 2 * pi);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(500, 250);
+  ctx.lineTo(675, 75);
+  ctx.lineTo(750, 150);
+  ctx.lineTo(575, 325);
+  ctx.lineTo(500, 250);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(553.033, 196.967);
+  ctx.lineTo(588.388, 161.612);
+  ctx.lineTo(800, 373.224);
+  ctx.lineTo(800, 443.934);
+  ctx.lineTo(553.033, 196.967);
+  ctx.fillStyle = "pink";
+  ctx.fill();
+  ctx.closePath();
+}

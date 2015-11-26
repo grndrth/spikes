@@ -6,14 +6,15 @@ window.onload = function () {
   let ctx = canvas.getContext("2d");
 
   let enemies = [];
+
   let mapData = [];
   let counter = 0;
   let fps = 60;
-  const wurzel2 =  Math.sqrt(2);
+  const wurzel2 = Math.sqrt(2);
   const pi = Math.PI;
 
-  let horst = {x: 0, y: 0, mapSeg: 0, speed: 0.8, k: 0, color: "blue"}; // speed in pixel per frame
-  let erna = {x: 800, y: 150 - 50 * wurzel2, mapSeg: 6, speed: -0.8, k: 1, color: "green"}; // speed in pixel per frame
+  let horst = {x: 0, y: 0, mapSeg: 0, speed: 1, k: 0, color: "blue"}; // speed in pixel per frame
+  let erna = {x: 800, y: 150 - 50 * wurzel2, mapSeg: 6, speed: -1.2, k: 1, color: "green"}; // speed in pixel per frame
   enemies.push(horst, erna);
 
   const map0 = {
@@ -112,16 +113,22 @@ window.onload = function () {
 
   function gameLoop () {
 
-    if (counter < 10000) {
+    if (enemies.length > 0) {
         setTimeout(() => {
           gameLoop();
         }, fps / 1000);
     }
 
     counter += 1;
+    let deadEnemies = [];
     drawBackground();
-    enemies.forEach((e) => {mov.moveToNextPosition(e, mapData);
+    // if (enemies.length > 0) {
+    enemies.forEach((e, i) => {mov.moveToNextPosition(e, i, mapData, deadEnemies);
                             });
+    // }
+    if (deadEnemies.length > 0) {
+      mov.deleteEnemies(enemies, deadEnemies);
+    }
     enemies.forEach(drawCircle);
   }
 

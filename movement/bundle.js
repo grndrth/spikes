@@ -58,14 +58,15 @@
 	  var ctx = canvas.getContext("2d");
 
 	  var enemies = [];
+
 	  var mapData = [];
 	  var counter = 0;
 	  var fps = 60;
 	  var wurzel2 = Math.sqrt(2);
 	  var pi = Math.PI;
 
-	  var horst = { x: 0, y: 0, mapSeg: 0, speed: 0.8, k: 0, color: "blue" }; // speed in pixel per frame
-	  var erna = { x: 800, y: 150 - 50 * wurzel2, mapSeg: 6, speed: -0.8, k: 1, color: "green" }; // speed in pixel per frame
+	  var horst = { x: 0, y: 0, mapSeg: 0, speed: 1, k: 0, color: "blue" }; // speed in pixel per frame
+	  var erna = { x: 800, y: 150 - 50 * wurzel2, mapSeg: 6, speed: -1.2, k: 1, color: "green" }; // speed in pixel per frame
 	  enemies.push(horst, erna);
 
 	  var map0 = {
@@ -164,17 +165,23 @@
 
 	  function gameLoop() {
 
-	    if (counter < 10000) {
+	    if (enemies.length > 0) {
 	      setTimeout(function () {
 	        gameLoop();
 	      }, fps / 1000);
 	    }
 
 	    counter += 1;
+	    var deadEnemies = [];
 	    drawBackground();
-	    enemies.forEach(function (e) {
-	      mov.moveToNextPosition(e, mapData);
+	    // if (enemies.length > 0) {
+	    enemies.forEach(function (e, i) {
+	      mov.moveToNextPosition(e, i, mapData, deadEnemies);
 	    });
+	    // }
+	    if (deadEnemies.length > 0) {
+	      mov.deleteEnemies(enemies, deadEnemies);
+	    }
 	    enemies.forEach(drawCircle);
 	  }
 
@@ -195,15 +202,16 @@
 	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
 	exports.moveToNextPosition = moveToNextPosition;
+	exports.deleteEnemies = deleteEnemies;
 
-	function moveToNextPosition(enemy, mapData) {
+	function moveToNextPosition(enemy, enemyInd, mapData, deadEnemies) {
 	  //  in welchem Mapsegment befindet sich horst nach seiner Bewegung?
 
-	  var i = enemy.mapSeg;
+	  var index = enemy.mapSeg;
 	  var direction = enemy.speed;
 	  var pos = enemy.k;
 
-	  var actualMapSeg = mapData[i];
+	  var actualMapSeg = mapData[index];
 
 	  var _calcNextPosition = calcNextPosition(enemy, actualMapSeg);
 
@@ -214,24 +222,32 @@
 	  var endT = 1 / actualMapSeg.factor || 1;
 
 	  if (direction > 0 && pos >= endT) {
-	    if (i + 1 > mapData.lenght) {
+	    if (index + 1 >= mapData.length) {
 	      console.log("Feind ist durch");
+	      deadEnemies.push(enemyInd);
 	    } else {
-	      enemy.mapSeg = i + 1;
+	      enemy.mapSeg = index + 1;
 	      enemy.k = 0;
 	    }
 	  } else if (direction < 0 && pos <= 0) {
-	    if (i - 1 < 0) {
+	    if (index - 1 < 0) {
 	      console.log("Feind kifft");
+	      deadEnemies.push(enemyInd);
 	    } else {
-	      enemy.mapSeg = i - 1;
-	      enemy.k = 1 / mapData[i - 1].factor || 1;
+	      enemy.mapSeg = index - 1;
+	      enemy.k = 1 / mapData[index - 1].factor || 1;
 	    }
 	  } else {
 	    enemy.x = nextX;
 	    enemy.y = nextY;
 	    enemy.k = nextT;
 	  }
+	}
+
+	function deleteEnemies(enemies, deadEnemies) {
+	  deadEnemies.reverse().forEach(function (e) {
+	    enemies.splice(e, 1);
+	  });
 	}
 
 	function calcNextPosition(enemy, mapSeg) {

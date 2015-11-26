@@ -1,30 +1,36 @@
-export function moveToNextPosition (enemy, mapData) {
+export function moveToNextPosition (enemy, enemyInd, mapData, deadEnemies) {
   //  in welchem Mapsegment befindet sich horst nach seiner Bewegung?
 
-  let {mapSeg: i, speed: direction, k: pos} = enemy;
-  let actualMapSeg = mapData[i];
+  let {mapSeg: index, speed: direction, k: pos} = enemy;
+  let actualMapSeg = mapData[index];
   let {nextX, nextY, nextT} = calcNextPosition(enemy, actualMapSeg);
   let endT = (1 / actualMapSeg.factor) || 1;
 
   if (direction > 0 && pos >= endT) {
-    if (i + 1 > mapData.lenght) {
+    if (index + 1 >= mapData.length) {
       console.log("Feind ist durch");
+      deadEnemies.push(enemyInd);
     } else {
-      enemy.mapSeg = i + 1;
+      enemy.mapSeg = index + 1;
       enemy.k = 0;
     }
   } else if (direction < 0 && pos <= 0){
-    if (i - 1 < 0) {
+    if (index - 1 < 0) {
       console.log("Feind kifft");
+      deadEnemies.push(enemyInd);
     } else {
-      enemy.mapSeg = i - 1;
-      enemy.k = (1 / mapData[i - 1].factor) || 1;
+      enemy.mapSeg = index - 1;
+      enemy.k = (1 / mapData[index - 1].factor) || 1;
     }
   } else {
       enemy.x = nextX;
       enemy.y = nextY;
       enemy.k = nextT;
   }
+}
+
+export function deleteEnemies (enemies, deadEnemies) {
+  deadEnemies.reverse().forEach((e) => {enemies.splice(e, 1); });
 }
 
 function calcNextPosition (enemy, mapSeg) {

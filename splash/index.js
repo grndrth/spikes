@@ -10,6 +10,7 @@ window.onload = function () {
 
   let enemies = [];
   let mapData = [];
+  let impactAreas = [];
   let fps = 60;
   // const wurzel2 = Math.sqrt(2);
   const pi = Math.PI;
@@ -29,9 +30,10 @@ window.onload = function () {
       target: -1,
       targetIndex: -1,
       activeIn: 0,
-      shootDuration: 30,
+      shootDuration: 60,
       reload: 250,
-      damage: 6
+      damage: 6,
+      splash: 40
     },
     {
       x: 400,
@@ -41,9 +43,10 @@ window.onload = function () {
       target: -1,
       targetIndex: -1,
       activeIn: 500,
-      shootDuration: 30,
+      shootDuration: 60,
       reload: 250,
-      damage: 6
+      damage: 6,
+      splash: 50
     },
     {
       x: 600,
@@ -53,9 +56,10 @@ window.onload = function () {
       target: -1,
       targetIndex: -1,
       activeIn: 0,
-      shootDuration: 30,
+      shootDuration: 60,
       reload: 250,
-      damage: 6
+      damage: 6,
+      splash: 30
     }
   ];
 
@@ -86,7 +90,7 @@ window.onload = function () {
     let rangeColor = "olive";
     if (target >= 0) {
       rangeColor = "red";
-      drawShoot(tower);
+      // drawShoot(tower);
     }
     if (ready > 0) {
       towerColor = "yellow";
@@ -100,18 +104,6 @@ window.onload = function () {
     ctx.arc(x, y, r2, 0, 2 * pi);
     ctx.strokeStyle = rangeColor;
     ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.closePath();
-  }
-
-  function drawShoot(tower) {
-    let {x: xT, y: yT, targetIndex: i} = tower;
-    let {x: xE, y: yE} = enemies[i];
-    ctx.beginPath();
-    ctx.moveTo(xT, yT);
-    ctx.lineTo(xE, yE);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
     ctx.stroke();
     ctx.closePath();
   }
@@ -134,6 +126,15 @@ window.onload = function () {
       }
   }
 
+  function drawImpact(area) {
+    let {x: x, y: y, radius: r} = area;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 2 * pi);
+    ctx.fillStyle = "rgba(250, 175, 100, 0.75)";
+    ctx.fill();
+    ctx.closePath();
+  }
+
   function gameLoop () {
 
     if (enemies.length > 0) {
@@ -144,6 +145,7 @@ window.onload = function () {
 
     let deadEnemies = [];
     drawBackground();
+
     enemies.forEach((e, i) => {
       if(e.hit <= 0) {
         e.speed = -0.1;
@@ -173,18 +175,19 @@ window.onload = function () {
     });
 
     reloadingTowers.forEach((tower) => {
+      let index = enemies.findIndex((enemy) => {
+        return enemy.id === tower.target;
+      });
+      tower.targetIndex = index;
+      let hitEnemy = enemies[index];
+      impactAreas.push({x: hitEnemy.x, y: hitEnemy.y, frames: 60, radius: tower.splash, damage: tower.damage});
+
       tower.activeIn = tower.reload;
       tower.target = -1;
     });
 
     shootingTowers.forEach((tower) => {
       tower.activeIn -= 1;
-      let index = enemies.findIndex((enemy) => {
-        return enemy.id === tower.target;
-      });
-      tower.targetIndex = index;
-      let hitEnemy = enemies[index];
-      hitEnemy.hit -= tower.damage / tower.shootDuration;
     });
 
     readyTowers.forEach((tower) => {
@@ -198,6 +201,28 @@ window.onload = function () {
     });
 
     towers.forEach(drawTower);
+
+    let activeImpactAreas = impactAreas.filter((area) => {
+      return area.frames === 60;
+    });
+
+
+
+    impactAreas.forEach((area) => {
+      area.frames -= 1;
+      if (area.frames > 0) {
+        drawImpact(area);
+      }
+    });
+
+    enemies.forEach((enemy) => {
+      activeImpactAreas.forEach((area) => {
+        let impact = shoot.checkImpact(enemy, area);
+        if (impact) {
+          enemy.hit -= area.damage;
+        }
+      });
+    });
 
     if (deadEnemies.length > 0) {
       mov.deleteEnemies(enemies, deadEnemies);

@@ -22,14 +22,9 @@ export function checkEnemyinRange(tower, enemies) {
   return target;
 }
 
-export function checkEnemyShootingTower(tower, enemies) {
-  let oldTarget = tower.target;
-  let newTarget = checkEnemyinRange(tower, enemies);
-
-  if (oldTarget === newTarget) {
-    return oldTarget;
-  } else {
-    return -1;
-  }
-
+export function checkImpact(enemy, area) {
+  let {x: xE, y: yE} = enemy;
+  let {x: xA, y: yA, radius: rA} = area;
+  let distance = calcDistance(xE, yE, xA, yA);
+  return distance < rA;
 }

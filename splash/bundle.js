@@ -65,6 +65,7 @@
 
 	  var enemies = [];
 	  var mapData = [];
+	  var impactAreas = [];
 	  var fps = 60;
 	  // const wurzel2 = Math.sqrt(2);
 	  var pi = Math.PI;
@@ -83,9 +84,10 @@
 	    target: -1,
 	    targetIndex: -1,
 	    activeIn: 0,
-	    shootDuration: 30,
+	    shootDuration: 60,
 	    reload: 250,
-	    damage: 6
+	    damage: 6,
+	    splash: 40
 	  }, {
 	    x: 400,
 	    y: 150,
@@ -94,9 +96,10 @@
 	    target: -1,
 	    targetIndex: -1,
 	    activeIn: 500,
-	    shootDuration: 30,
+	    shootDuration: 60,
 	    reload: 250,
-	    damage: 6
+	    damage: 6,
+	    splash: 50
 	  }, {
 	    x: 600,
 	    y: 550,
@@ -105,9 +108,10 @@
 	    target: -1,
 	    targetIndex: -1,
 	    activeIn: 0,
-	    shootDuration: 30,
+	    shootDuration: 60,
 	    reload: 250,
-	    damage: 6
+	    damage: 6,
+	    splash: 30
 	  }];
 
 	  var feind1 = { id: 1, x: 0, y: 0, mapSeg: 0, speed: 0.9, k: 0, color: "green", hit: 10, strength: 10 }; // speed in pixel per frame
@@ -142,7 +146,7 @@
 	    var rangeColor = "olive";
 	    if (target >= 0) {
 	      rangeColor = "red";
-	      drawShoot(tower);
+	      // drawShoot(tower);
 	    }
 	    if (ready > 0) {
 	      towerColor = "yellow";
@@ -200,6 +204,18 @@
 	    }
 	  }
 
+	  function drawImpact(area) {
+	    var x = area.x;
+	    var y = area.y;
+	    var r = area.radius;
+
+	    ctx.beginPath();
+	    ctx.arc(x, y, r, 0, 2 * pi);
+	    ctx.fillStyle = "rgba(250, 175, 100, 0.75)";
+	    ctx.fill();
+	    ctx.closePath();
+	  }
+
 	  function gameLoop() {
 
 	    if (enemies.length > 0) {
@@ -210,6 +226,7 @@
 
 	    var deadEnemies = [];
 	    drawBackground();
+
 	    enemies.forEach(function (e, i) {
 	      if (e.hit <= 0) {
 	        e.speed = -0.1;
@@ -239,18 +256,25 @@
 	    });
 
 	    reloadingTowers.forEach(function (tower) {
+	      var index = enemies.findIndex(function (enemy) {
+	        return enemy.id === tower.target;
+	      });
+	      tower.targetIndex = index;
+	      var hitEnemy = enemies[index];
+	      impactAreas.push({ x: hitEnemy.x, y: hitEnemy.y, frames: 60, radius: tower.splash, damage: tower.damage });
+
 	      tower.activeIn = tower.reload;
 	      tower.target = -1;
 	    });
 
 	    shootingTowers.forEach(function (tower) {
 	      tower.activeIn -= 1;
-	      var index = enemies.findIndex(function (enemy) {
-	        return enemy.id === tower.target;
-	      });
-	      tower.targetIndex = index;
-	      var hitEnemy = enemies[index];
-	      hitEnemy.hit -= tower.damage / tower.shootDuration;
+	      // let index = enemies.findIndex((enemy) => {
+	      //   return enemy.id === tower.target;
+	      // });
+	      // tower.targetIndex = index;
+	      // let hitEnemy = enemies[index];
+	      // hitEnemy.hit -= tower.damage / tower.shootDuration;
 	    });
 
 	    readyTowers.forEach(function (tower) {
@@ -264,6 +288,26 @@
 	    });
 
 	    towers.forEach(drawTower);
+
+	    var activeImpactAreas = impactAreas.filter(function (area) {
+	      return area.frames === 60;
+	    });
+
+	    impactAreas.forEach(function (area) {
+	      area.frames -= 1;
+	      if (area.frames > 0) {
+	        drawImpact(area);
+	      }
+	    });
+
+	    enemies.forEach(function (enemy) {
+	      activeImpactAreas.forEach(function (area) {
+	        var impact = shoot.checkImpact(enemy, area);
+	        if (impact) {
+	          enemy.hit -= area.damage;
+	        }
+	      });
+	    });
 
 	    if (deadEnemies.length > 0) {
 	      mov.deleteEnemies(enemies, deadEnemies);
@@ -406,7 +450,7 @@
 	  value: true
 	});
 	exports.checkEnemyinRange = checkEnemyinRange;
-	exports.checkEnemyShootingTower = checkEnemyShootingTower;
+	exports.checkImpact = checkImpact;
 	function pythagoras(a, b) {
 	  return Math.sqrt(a * a + b * b);
 	}
@@ -434,15 +478,15 @@
 	  return target;
 	}
 
-	function checkEnemyShootingTower(tower, enemies) {
-	  var oldTarget = tower.target;
-	  var newTarget = checkEnemyinRange(tower, enemies);
+	function checkImpact(enemy, area) {
+	  var xE = enemy.x;
+	  var yE = enemy.y;
+	  var xA = area.x;
+	  var yA = area.y;
+	  var rA = area.radius;
 
-	  if (oldTarget === newTarget) {
-	    return oldTarget;
-	  } else {
-	    return -1;
-	  }
+	  var distance = calcDistance(xE, yE, xA, yA);
+	  return distance < rA;
 	}
 
 /***/ },

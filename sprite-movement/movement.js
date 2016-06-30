@@ -66,6 +66,8 @@ function calcCircleNextPosition (enemy, mapSeg) {
   let nextX = r * Math.cos(2 * Math.PI * d * (nextT - s)) + mX;
   let nextY = r * Math.sin(2 * Math.PI * d * (nextT - s)) + mY;
 
+
+
   return {nextX, nextY, nextT};
 }
 

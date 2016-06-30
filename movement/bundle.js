@@ -52,103 +52,31 @@
 
 	var mov = _interopRequireWildcard(_movement);
 
+	var _map0 = __webpack_require__(2);
+
 	window.onload = function () {
 
 	  var canvas = document.getElementById("canvas");
 	  var ctx = canvas.getContext("2d");
+	  var background = new Image();
+	  background.onload = function () {
+	    drawBackground();
+	    gameLoop();
+	  };
+
+	  background.src = "map0.png";
 
 	  var enemies = [];
 
-	  var mapData = [];
-	  var counter = 0;
+	  var mapData = _map0.map;
 	  var fps = 60;
-	  var wurzel2 = Math.sqrt(2);
-	  var pi = Math.PI;
 
-	  var horst = { x: 0, y: 0, mapSeg: 0, speed: 1, k: 0, color: "blue" }; // speed in pixel per frame
-	  var erna = { x: 800, y: 150 - 50 * wurzel2, mapSeg: 6, speed: -1.2, k: 1, color: "green" }; // speed in pixel per frame
+	  var horst = { x: 100, y: 0, mapSeg: 0, speed: 1, k: 0, color: "yellow" }; // speed in pixel per frame
+	  var erna = { x: 200, y: 600, mapSeg: 12, speed: -0.8, k: 1, color: "red" }; // speed in pixel per frame
 	  enemies.push(horst, erna);
 
-	  var map0 = {
-	    type: "line",
-	    dVector: [250, 250],
-	    length: wurzel2 * 250
-	  };
-
-	  var map1 = {
-	    type: "circle",
-	    center: [200, 300],
-	    radius: wurzel2 * 50,
-	    shift: 0.125,
-	    factor: 1,
-	    length: 100 * wurzel2 * pi,
-	    direction: 1
-	  };
-
-	  var map2 = map0;
-
-	  var map3 = {
-	    type: "circle",
-	    center: [575, 425],
-	    radius: wurzel2 * 75,
-	    shift: 0.375,
-	    factor: 2,
-	    length: 75 * wurzel2 * pi,
-	    direction: -1
-	  };
-
-	  var map4 = {
-	    type: "line",
-	    dVector: [-150, -150],
-	    length: wurzel2 * 150
-	  };
-
-	  var map5 = {
-	    type: "circle",
-	    center: [550, 150],
-	    radius: wurzel2 * 50,
-	    shift: 0.625,
-	    factor: 8 / 3,
-	    length: 37.5 * wurzel2 * pi,
-	    direction: 1
-	  };
-
-	  var map6 = {
-	    type: "line",
-	    dVector: [250, 0],
-	    length: 250
-	  };
-
-	  mapData.push(map0, map1, map2, map3, map4, map5, map6);
-
 	  function drawBackground() {
-	    ctx.fillStyle = "white";
-	    ctx.fillRect(0, 0, 800, 600);
-	    ctx.beginPath();
-	    ctx.moveTo(0, 0);
-	    ctx.lineTo(500, 500);
-	    ctx.moveTo(650, 350);
-	    ctx.lineTo(500, 200);
-	    ctx.moveTo(550, 150 - 50 * wurzel2);
-	    ctx.lineTo(800, 150 - 50 * wurzel2);
-	    ctx.strokeStyle = "red";
-	    ctx.stroke();
-	    ctx.closePath();
-	    ctx.beginPath();
-	    ctx.arc(575, 425, 75 * wurzel2, -0.25 * pi, 0.75 * pi);
-	    ctx.strokeStyle = "red";
-	    ctx.stroke();
-	    ctx.closePath();
-	    ctx.beginPath();
-	    ctx.arc(550, 150, 50 * wurzel2, 0.75 * pi, 1.5 * pi);
-	    ctx.strokeStyle = "red";
-	    ctx.stroke();
-	    ctx.closePath();
-	    ctx.beginPath();
-	    ctx.arc(200, 300, 50 * wurzel2, 0, 2 * pi);
-	    ctx.strokeStyle = "red";
-	    ctx.stroke();
-	    ctx.closePath();
+	    ctx.drawImage(background, 0, 0);
 	  }
 
 	  function drawCircle(enemy) {
@@ -171,22 +99,16 @@
 	      }, fps / 1000);
 	    }
 
-	    counter += 1;
 	    var deadEnemies = [];
 	    drawBackground();
-	    // if (enemies.length > 0) {
 	    enemies.forEach(function (e, i) {
 	      mov.moveToNextPosition(e, i, mapData, deadEnemies);
 	    });
-	    // }
 	    if (deadEnemies.length > 0) {
 	      mov.deleteEnemies(enemies, deadEnemies);
 	    }
 	    enemies.forEach(drawCircle);
 	  }
-
-	  drawBackground();
-	  gameLoop();
 	};
 
 /***/ },
@@ -304,6 +226,122 @@
 
 	  return { nextX: nextX, nextY: nextY, nextT: nextT };
 	}
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var pi = Math.PI;
+
+	var map0 = {
+	  type: "line",
+	  dVector: [0, 310],
+	  length: 310
+	};
+
+	var map1 = {
+	  type: "circle",
+	  center: [140, 310],
+	  radius: 40,
+	  shift: 0.5,
+	  direction: -1,
+	  factor: 4,
+	  length: 20 * pi
+	};
+
+	var map2 = {
+	  type: "line",
+	  dVector: [210, 0],
+	  length: 210
+	};
+
+	var map3 = {
+	  type: "circle",
+	  center: [350, 325],
+	  radius: 25,
+	  shift: 0.25,
+	  direction: -1,
+	  factor: 4,
+	  length: 12.5 * pi
+	};
+
+	var map4 = {
+	  type: "line",
+	  dVector: [0, -195],
+	  length: 195
+	};
+
+	var map5 = {
+	  type: "circle",
+	  center: [425, 130],
+	  radius: 50,
+	  shift: 0.5,
+	  direction: 1,
+	  factor: 3,
+	  length: 100 / 3 * pi
+	};
+
+	var map6 = {
+	  type: "line",
+	  dVector: [195, 88.7],
+	  length: 214.2
+	};
+
+	var map7 = {
+	  type: "circle",
+	  center: [625, 210],
+	  radius: 40,
+	  shift: 1 / 6,
+	  direction: 1,
+	  factor: 6,
+	  length: 40 / 3 * pi
+	};
+
+	var map8 = {
+	  type: "line",
+	  dVector: [0, 240],
+	  length: 240
+	};
+
+	var map9 = {
+	  type: "circle",
+	  center: [635, 450],
+	  radius: 30,
+	  shift: 0,
+	  direction: 1,
+	  factor: 4,
+	  length: 15 * pi
+	};
+
+	var map10 = {
+	  type: "line",
+	  dVector: [-385, 0],
+	  length: 385
+	};
+
+	var map11 = {
+	  type: "circle",
+	  center: [250, 530],
+	  radius: 50,
+	  shift: 0.75,
+	  direction: -1,
+	  factor: 4,
+	  length: 25 * pi
+	};
+
+	var map12 = {
+	  type: "line",
+	  dVector: [0, 70],
+	  length: 70
+	};
+
+	var map = [map0, map1, map2, map3, map4, map5, map6, map7, map8, map9, map10, map11, map12];
+	exports.map = map;
 
 /***/ }
 /******/ ]);

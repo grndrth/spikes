@@ -2,42 +2,48 @@ window.onload = function () {
 
   let canvas = document.getElementById("canvas");
   let ctx = canvas.getContext("2d");
+  let towerImg = new Image();
   let qualm = new Image();
-  qualm.onload = start;
-  qualm.src = "qualm.png";
-  let enemy1 = {x: 200, y: 400, radius: 15};
-  let tower1 = {x: 500, y: 500, radius: 25};
-  let enemy2 = {x: 600, y: 150, radius: 15};
-  let tower2 = {x: 50, y: 50, radius: 25};
+  towerImg.onload = () => {
+    qualm.onload = start;
+    qualm.src = "qualm.png";
+  };
+  towerImg.src = "tower.png";
+  let enemy1 = {x: 500, y: 500, radius: 15};
+  let tower1 = {x: 500, y: 200, radius: 25};
   let factor = 2;
   let targetFactor = 0;
   let counter = 0;
+  let status = 0;
 
 
   function animationLoop() {
 
-      if(counter <= 400) {
+      if(counter <= 800) {
         window.requestAnimationFrame(animationLoop);
       }
 
       ctx.clearRect(0, 0, 800, 600);
-      drawTower(tower1, ctx);
-      drawTower(tower2, ctx);
       drawEnemy(enemy1, ctx);
-      drawEnemy(enemy2, ctx);
-      drawSmoke(enemy1, tower1, factor, targetFactor);
-      drawSmoke(enemy2, tower2, factor, targetFactor);
+
+      if(counter > 120 && counter <= 600) {
+        status = 1;
+      } else {
+        status = 0;
+      }
+
+      if (status > 0) {
+        drawSmoke(enemy1, tower1, factor, targetFactor);
+        if(targetFactor < 1) {
+          targetFactor += 1/60;
+        } else {
+          targetFactor = 1;
+        }
+      }
+      drawTower(tower1, ctx, towerImg, status, enemy1);
 
       enemy1.x += 1;
-      enemy1.y -= 0.25;
-      let oldX = enemy2.x;
-      enemy2.x -= 1;
-      enemy2.y = -0.00875 * oldX * oldX + 7 * oldX - 900;
-      if(targetFactor < 1) {
-        targetFactor += 1/60;
-      } else {
-        targetFactor = 1;
-      }
+      enemy1.y -= 1;
       counter += 1;
   }
 
@@ -82,12 +88,19 @@ window.onload = function () {
     ctx.closePath();
   }
 
-  function drawTower(tower, ctx) {
-    ctx.beginPath();
-    ctx.fillStyle = "blue";
-    ctx.arc(tower.x, tower.y, tower.radius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
+  function drawTower(tower, ctx, img, status, enemy) {
+    if(status > 0) {
+      let smoke = calcSmokeTarget(enemy, tower, factor, targetFactor);
+      let {startX, startY} = calcStartingPoint(smoke, tower);
+      let startingAngle = calcStartingAngle(smoke, tower, startX);
+      ctx.save();
+      ctx.translate(tower.x, tower.y);
+      ctx.rotate(startingAngle - Math.PI);
+      ctx.drawImage(img, 0, status * 70, 60, 60, -tower.radius , -tower.radius, 2 * tower.radius, 2 * tower.radius);
+      ctx.restore();
+    } else {
+      ctx.drawImage(img, 0, status * 70, 60, 60, tower.x - tower.radius, tower.y - tower.radius, 2 * tower.radius, 2 * tower.radius);
+    }
   }
 
   function drawSmoke(enemy, tower, factor, targetFactor) {
@@ -98,14 +111,10 @@ window.onload = function () {
 
     ctx.save();
     ctx.beginPath();
-    // ctx.strokeStyle = "black";
-    // ctx.fillStyle = `rgba(150, 150, 150, ${randOp})`;
     ctx.moveTo(tower.x, tower.y);
     ctx.lineTo(startX, startY);
     ctx.arc(smoke.x, smoke.y, smoke.radius, startingAngle, endAngle, false);
     ctx.lineTo(tower.x, tower.y);
-    // ctx.stroke();
-    // ctx.fill();
     ctx.closePath();
     ctx.clip();
     ctx.drawImage(qualm, 0, 0, 800, 600);

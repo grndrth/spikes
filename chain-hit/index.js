@@ -20,16 +20,14 @@ window.onload = function () {
   let status = 0; //idle, 1: shooting, 2: reloading
   let enemyFactor = 0;
 
-
-
   function animationLoop() {
-
       if(counter <= 800) {
         window.requestAnimationFrame(animationLoop);
       }
-      ctxs.globalAlpha = 0.5;
+      ctxs.globalAlpha = 1;
       ctx.clearRect(0, 0, 800, 600);
       ctxs.clearRect(0, 0, 800, 600);
+
       drawEnemy(enemy1, ctx);
       drawEnemy(enemy2, ctx);
 
@@ -46,7 +44,7 @@ window.onload = function () {
             drawIdleTower(tower1, ctx, towerImg, 0, enemy1);
           break;
         case 1:
-          let smoke = calcSmokeTarget(enemy1, tower1, factor, targetFactor);
+          let smoke = calcSmokeTargetVector(enemy1, tower1, factor, targetFactor);
           let {startX, startY} = calcStartingPoint(smoke, tower1);
           let startingAngle = calcStartingAngle(smoke, tower1, startX);
           if(targetFactor < 1) {
@@ -56,7 +54,7 @@ window.onload = function () {
           }
             drawRotatingTower(tower1, ctx, towerImg, status, startingAngle);
             drawSmoke(enemy1, tower1, factor, targetFactor, smoke, startX, startY, startingAngle, ctxs);
-            drawChainSmoke(enemy1, enemy2, ctxs, 1.5, qualm);
+            drawChainSmoke(enemy1, enemy2, ctxs, qualm);
           break;
         case 2:
             drawIdleTower(tower1, ctx, towerImg, 0, enemy1);
@@ -64,37 +62,6 @@ window.onload = function () {
         default:
 
       }
-
-      // if(counter > 120 && counter <= 600) {
-      //   status = 1;
-      // } else {
-      //   status = 0;
-      // }
-      //
-      // if (status > 0) {
-      //   drawSmoke(enemy1, tower1, factor, targetFactor);
-      //   if(targetFactor < 1) {
-      //     targetFactor += 1/60;
-      //   } else {
-      //     targetFactor = 1;
-      //   }
-      // } else if (status === 0 && targetFactor > 0) {
-      //   drawCircularSmoke(enemy1, ctx, factor);
-      //   // Smoke soll sich zum Turm hinbewegen
-      //   targetFactor -= 1 / 60;
-      // }
-      //
-      // if (status > 0 && targetFactor >= 1) {
-      //   drawSmoke(enemy2, enemy1, 1.5, enemyFactor);
-      //   if(enemyFactor < 1) {
-      //     enemyFactor += 1/60;
-      //   } else {
-      //     enemyFactor = 1;
-      //   }
-      // }
-
-
-      // drawTower(tower1, ctx, towerImg, status, enemy1);
 
       enemy1.x += 1;
       enemy2.x += 1;
@@ -126,7 +93,7 @@ window.onload = function () {
     return angle;
   }
 
-  function calcSmokeTarget(enemy, tower, factor, targetFactor) {
+  function calcSmokeTargetVector(enemy, tower, factor, targetFactor) {
     let {x: eX, y: eY, radius: eR} = enemy;
     let {x: tX, y: tY} = tower;
     let x = tX + targetFactor * (eX - tX);
@@ -156,79 +123,101 @@ window.onload = function () {
   }
 
   function drawSmoke(enemy, tower, factor, targetFactor, smoke, startX, startY, startingAngle, ctx) {
-    let endAngle = startingAngle + Math.PI;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(tower.x, tower.y);
-    ctx.lineTo(startX, startY);
-    ctx.arc(smoke.x, smoke.y, smoke.radius, startingAngle, endAngle, false);
-    ctx.lineTo(tower.x, tower.y);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(qualm, 0, 0, 800, 600);
-    ctx.restore();
+
+    // let endAngle = startingAngle + Math.PI;
+
+    // ctx.save();
+    // ctx.beginPath();
+    // ctx.moveTo(tower.x, tower.y);
+    // ctx.lineTo(startX, startY);
+    // ctx.arc(smoke.x, smoke.y, smoke.radius, startingAngle, endAngle, false);
+    // ctx.lineTo(tower.x, tower.y);
+    // ctx.closePath();
+    // ctx.clip();
+    // ctx.drawImage(qualm, 0, 0, 800, 600);
+    // ctx.restore();
   }
 
-  function drawCircularSmoke(enemy, ctx, factor) {
-    let {x, y, radius} = enemy;
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(155, 155, 155, 0.5)";
-    ctx.arc(x, y, radius * factor, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
+  function drawChainSmoke(enemy, target, ctx, img) {
+    // let {x: x, y: y, radius: r} = target;
+    // let {px1, px2, px3, px4, py1, py2, py3, py4} = calcRectPoints(enemy, target);
+    let points = calcRectPoints(enemy, target);
+    // let points = {px1: 100, px2: 400, px3: 400, px4: 100, py1: 100, py2: 100, py3: 200, py4: 200};
+    // let target1 = {x: 110, y: 120, radius: 50};
+    drawComp(img, ctx, points, target);
   }
 
-  function drawChainSmoke(enemy, target, ctx, factor, img) {
+  function drawComp(img, ctx, points, target) {
     let {x: x, y: y, radius: r} = target;
-    let {px1, px2, px3, px4, py1, py2, py3, py4} = calcRectPoints(enemy, target);
-    console.log(px1, px2, px3, px4, py1, py2, py3, py4);
-    ctx.save();
+    let {px1, px2, px3, px4, py1, py2, py3, py4} = points;
+
+    ctx.drawImage(img ,0, 0, 800, 600);
+    ctx.globalCompositeOperation='destination-in';
     ctx.beginPath();
-    ctx.moveTo(px1, py1);
+    ctx.moveTo(px3, py3);
+    ctx.lineTo(px1, py1);
     ctx.lineTo(px2, py2);
     ctx.lineTo(px4, py4);
-    ctx.lineTo(px3, py3);
-    ctx.lineTo(px1, py1);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(img, 0, 0, 800, 600);
-    ctx.restore();
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r * factor, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(img, 0, 0, 800, 600);
-    ctx.restore();
+    // ctx.closePath();
+    // ctx.moveTo(px1, py1);
+    // ctx.lineTo(px2, py2);
+    // ctx.lineTo(px3, py3);
+    // ctx.lineTo(px4, py4);
+    ctx.arc(x, y, r * 1.5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalCompositeOperation='source-over';
   }
 
   function calcRectPoints(enemy, target) {
-    let {x: x1, y: y1, radius: r1} = enemy;
+    let {x: x1, y: y1} = enemy;
     let {x: x2, y: y2, radius: r2} = target;
 
     let deltaX = - (y1 - y2);
     let deltaY = - (x1 - x2);
     let width = r2 / Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-    let px1 = x1 - 0.5 * width * deltaX;
-    let px2 = x1 + 0.5 * width * deltaX;
-    let px3 = x2 - 0.5 * width * deltaX;
-    let px4 = x2 + 0.5 * width * deltaX;
-    let py1 = y1 - 0.5 * width * deltaY;
-    let py2 = y1 + 0.5 * width * deltaY;
-    let py3 = y2 - 0.5 * width * deltaY;
-    let py4 = y2 + 0.5 * width * deltaY;
+    let px1 = Math.floor(x1 - 0.5 * width * deltaX);
+    let px2 = Math.floor(x1 + 0.5 * width * deltaX);
+    let px3 = Math.floor(x2 - 0.5 * width * deltaX);
+    let px4 = Math.floor(x2 + 0.5 * width * deltaX);
+    let py1 = Math.floor(y1 - 0.5 * width * deltaY);
+    let py2 = Math.floor(y1 + 0.5 * width * deltaY);
+    let py3 = Math.floor(y2 - 0.5 * width * deltaY);
+    let py4 = Math.floor(y2 + 0.5 * width * deltaY);
     return {px1, px2, px3, px4, py1, py2, py3, py4};
   }
 
-  // function calcDistance(enemy, tower) {
-  //   let {x: eX, y: eY} = enemy;
-  //   let {x: tX, y: tY} = tower;
-  //   return Math.sqrt(Math.pow((eX - tX), 2) + Math.pow((eY - tY), 2));
-  //
-  // }
   function start() {
     animationLoop();
   }
 
 };
+
+
+// // draw all rects with strokes
+// ctx.beginPath();
+// ctx.moveTo(10, 10);
+// ctx.lineTo(60, 10);
+// ctx.lineTo(60, 60);
+// ctx.lineTo(10, 60);
+// ctx.lineTo(10, 10);
+// ctx.closePath();
+// ctx.arc(60, 60, 20, 0, 2 * Math.PI);
+// ctx.stroke();
+//
+// // set compositing to erase existing drawings
+// // where the new drawings are drawn
+// ctx.globalCompositeOperation='destination-out';
+//
+// // fill all rects
+// // This "erases" all but the outline stroke
+// ctx.beginPath();
+// ctx.moveTo(10, 10);
+// ctx.lineTo(60, 10);
+// ctx.lineTo(60, 60);
+// ctx.lineTo(10, 60);
+// ctx.lineTo(10, 10);
+// ctx.closePath();
+// ctx.arc(60, 60, 20, 0, 2 * Math.PI);
+// ctx.fillStyle = "black"
+// ctx.fill();

@@ -9,6 +9,7 @@ body {
 }
 
 canvas {
+    background: white;
     width: 800px;
     height: 600px;
 }
@@ -22,11 +23,3 @@ canvas {
     right: 0;
     left: 0;
 }
-
-#canvas {
-  background: white;
-}
-
-/*#canvas-smoke {
-  background: green;
-}*/
